@@ -5,23 +5,42 @@ on:
     branches:
       - main
   workflow_dispatch:
+
 jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.set_version.outputs.version }}
     steps:
-      - name: create static deployment file
-        run: |
-          mkdir dist
-          echo "<h1>Hello GitHub Pages</h1>" >> dist/index.html
+      - name: Checkout Repo
+        uses: actions/checkout@v4
 
-      - name: Update pages artifact
-        uses: actions/upload-pages-artifact@v3  # This is a plugin, specifically defined to work with GitHub Pages
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '25.x'
+      
+      - name: Set Version
+        id: set_version
+        run: |  # Output the version number to the version JSON file, which updates every time you commit
+          version=$(date +'%Y%m%d.%H%M%S')
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          printf '{"version": "%s" }' "$version" > public/version.json
+
+      - name: Build
+        run: |  # npm ci is a clean install of npm, for testing environments/CI. The last line is so any 404 will be redirected to the home page
+          npm ci && npm run build
+          cp dist/index.html dist/404.html
+
+      - name: Update GitHub Pages artifact # Packages up the dist directory for the next job to deploy to GitHub Pages
+        uses: actions/upload-pages-artifact@v3 # This is a plugin, specifically defined to work with GitHub Pages
         with:
           path: dist/
+
   deploy:
     needs: build  # Build before you deploy
-    permissions:
+    permissions:  # Permissions to modify GitHub Pages for this repo
       pages: write
       id-token: write
     environment:

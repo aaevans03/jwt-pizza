@@ -21,12 +21,13 @@ jobs:
         with:
           node-version: '25.x'
       
-      - name: Set Version
+      - name: Set Version and Owner
         id: set_version
         run: |  # Output the version number to the version JSON file, which updates every time you commit
           version=$(date +'%Y%m%d.%H%M%S')
           echo "version=$version" >> "$GITHUB_OUTPUT"
           printf '{"version": "%s" }' "$version" > public/version.json
+          printf '{"additionalNotice": "Build officially verified by Alex."}' > public/additional-notice.json
 
       - name: Build
         run: |  # npm ci is a clean install of npm, for testing environments/CI. The last line is so any 404 will be redirected to the home page
@@ -51,3 +52,10 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4   # Looks for artifact created with the build job
+
+  success:
+    needs: [build, deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Success Message
+        run: echo "Good job, you succeeded in this amazing CI process."

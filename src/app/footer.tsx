@@ -7,11 +7,15 @@ interface Props {
 
 export default function Footer(props: Props) {
   const [version, setVersion] = React.useState('');
+  const [additionalMessage, setAdditionalMessage] = React.useState('');
 
   React.useEffect(() => {
     fetch('/version.json')
       .then((response) => response.json())
       .then((data) => setVersion(data.version));
+    fetch('/additional-notice.json')
+      .then((response) => response.json())
+      .then((data) => setAdditionalMessage(data.additionalMessage))
   }, []);
 
   return (
@@ -30,7 +34,7 @@ export default function Footer(props: Props) {
               )
           )}
         </nav>
-        <p className="text-sm text-center italic text-gray-400">© 2024 JWT Pizza LTD. All rights reserved. Version: {version}</p>
+        <p className="text-sm text-center italic text-gray-400">© 2024 JWT Pizza LTD. All rights reserved. {additionalMessage} Version: {version}</p>
       </div>
     </footer>
   );

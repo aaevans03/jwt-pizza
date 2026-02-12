@@ -1,8 +1,8 @@
 import { test, expect } from 'playwright-test-coverage';
-import { basicInit, registerEndpoint } from './mocks';
+import { basicInit } from './mocks';
 
 test('Register', async ({ page }) => {
-  await registerEndpoint(page);
+  await basicInit(page);
   await page.goto('http://localhost:5173/');
 
   const email = 'billy@gmail.com';

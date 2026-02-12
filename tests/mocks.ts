@@ -2,24 +2,6 @@ import { Page } from '@playwright/test';
 import { expect } from 'playwright-test-coverage';
 import { Role, User } from '../src/service/pizzaService';
 
-export async function registerEndpoint(page: Page) {
-  await page.route('*/**/api/auth', async (route) => {
-    const registerReq = { name: 'Billy', email: 'billy@gmail.com', password: 'pass' };
-    const registerRes = {
-      user: {
-        id: 1,
-        name: 'Billy',
-        email: 'billy@gmail.com',
-        roles: [{ role: 'diner' }],
-      },
-      token: 'abcdef',
-    };
-    expect(route.request().method()).toBe('POST');
-    expect(route.request().postDataJSON()).toMatchObject(registerReq);
-    await route.fulfill({ json: registerRes });
-  });
-}
-
 export async function basicInit(page: Page) {
   let loggedInUser: User | undefined;
   const validUsers: Record<string, User> = {
@@ -48,19 +30,39 @@ export async function basicInit(page: Page) {
 
   // Authorize login for the given user
   await page.route('*/**/api/auth', async (route) => {
-    const loginReq = route.request().postDataJSON();
-    const user = validUsers[loginReq.email];
-    if (!user || user.password !== loginReq.password) {
-      await route.fulfill({ status: 401, json: { error: 'Unauthorized' } });
-      return;
+    const method = route.request().method();
+
+    if (method === 'PUT') {
+      const loginReq = route.request().postDataJSON();
+      const user = validUsers[loginReq.email];
+      if (!user || user.password !== loginReq.password) {
+        await route.fulfill({ status: 401, json: { error: 'Unauthorized' } });
+        return;
+      }
+      loggedInUser = validUsers[loginReq.email];
+      const loginRes = {
+        user: loggedInUser,
+        token: 'abcdef',
+      };
+      expect(route.request().method()).toBe('PUT');
+      await route.fulfill({ json: loginRes });
     }
-    loggedInUser = validUsers[loginReq.email];
-    const loginRes = {
-      user: loggedInUser,
-      token: 'abcdef',
-    };
-    expect(route.request().method()).toBe('PUT');
-    await route.fulfill({ json: loginRes });
+
+    else if (method === 'POST') {
+      const registerReq = { name: 'Billy', email: 'billy@gmail.com', password: 'pass' };
+      const registerRes = {
+        user: {
+          id: 1,
+          name: 'Billy',
+          email: 'billy@gmail.com',
+          roles: [{ role: 'diner' }],
+        },
+        token: 'abcdef',
+      };
+      expect(route.request().method()).toBe('POST');
+      expect(route.request().postDataJSON()).toMatchObject(registerReq);
+      await route.fulfill({ json: registerRes });
+    }
   });
 
   // Return the currently logged in user
@@ -115,6 +117,7 @@ export async function basicInit(page: Page) {
   // Order a pizza.
   await page.route('*/**/api/order', async (route) => {
     const method = route.request().method();
+
     if (method === 'POST') {
       const orderReq = route.request().postDataJSON();
       const orderRes = {
@@ -123,44 +126,46 @@ export async function basicInit(page: Page) {
       };
       expect(route.request().method()).toBe('POST');
       await route.fulfill({ json: orderRes });
-    } else if (method === 'GET') {
+    }
+
+    else if (method === 'GET') {
       expect(route.request().method()).toBe('GET');
       await route.fulfill({ json: { dinerId: 4, orders: [], page: 1 } });
     }
 
-  // Send back "response" from pizza factory for valid JWT token
-  await page.route('https://pizza-factory.cs329.click/api/order/verify', async (route) => {
+    // Send back "response" from pizza factory for valid JWT token
+    await page.route('https://pizza-factory.cs329.click/api/order/verify', async (route) => {
 
-    const response = {
-      message: "valid",
-      payload: {
-        "vendor": {
+      const response = {
+        message: "valid",
+        payload: {
+          "vendor": {
             "id": "pizzavendor",
             "name": "Pizza Vendor"
-        },
-        "diner": {
+          },
+          "diner": {
             "id": 3,
             "name": "Pizza Lover",
             "email": "pizzalover@jwt.com"
-        },
-        "order": {
+          },
+          "order": {
             "items": [
-                {
-                    "menuId": 1,
-                    "description": "Veggie",
-                    "price": 0.0038
-                }
+              {
+                "menuId": 1,
+                "description": "Veggie",
+                "price": 0.0038
+              }
             ],
             "storeId": "4",
             "franchiseId": 2,
             "id": 9999
+          }
         }
       }
-    }
 
-    await route.fulfill({ json: response })
-  });
-    
+      await route.fulfill({ json: response })
+    });
+
   });
 
   await page.goto('/');

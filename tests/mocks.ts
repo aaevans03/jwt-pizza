@@ -135,8 +135,6 @@ export async function basicInit(page: Page) {
 
     franchises.push(newFranchise);
 
-    console.log(franchises);
-
     expect(route.request().method()).toBe('POST');
     await route.fulfill({ json: newFranchise });
   });

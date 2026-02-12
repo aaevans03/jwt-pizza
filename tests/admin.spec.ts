@@ -37,5 +37,14 @@ test('Admin Dashboard', async ({ page }) => {
     await page.getByRole('button', { name: 'Add Franchise' }).click();
     await expect(page.getByText('Create franchise', { exact: true })).toBeVisible();
     await expect(page.getByText('Want to create franchise?')).toBeVisible();
-    await page.getByRole('button', { name: 'Cancel' }).click();
+    
+    // Create a new franchise
+    await page.getByRole('textbox', { name: 'franchise name' }).click();
+    await page.getByRole('textbox', { name: 'franchise name' }).fill('Pie it Up');
+    await page.getByRole('textbox', { name: 'franchise name' }).press('Tab');
+    await page.getByRole('textbox', { name: 'franchisee admin email' }).fill('franchisee@jwt.com');
+    await page.getByRole('button', { name: 'Create' }).click();
+    
+    // Expect that new franchise to display
+    await expect(page.getByRole('cell', { name: 'Pie it Up' })).toBeVisible();
 });

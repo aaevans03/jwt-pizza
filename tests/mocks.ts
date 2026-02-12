@@ -28,6 +28,20 @@ export async function basicInit(page: Page) {
     }
   };
 
+  let franchises = [
+    {
+      id: 2,
+      name: 'LotaPizza',
+      stores: [
+        { id: 4, name: 'Lehi' },
+        { id: 5, name: 'Springville' },
+        { id: 6, name: 'American Fork' },
+      ],
+    },
+    { id: 3, name: 'PizzaCorp', stores: [{ id: 7, name: 'Spanish Fork' }] },
+    { id: 4, name: 'topSpot', stores: [] }
+  ];
+
   // Authorize login for the given user
   await page.route('*/**/api/auth', async (route) => {
     const method = route.request().method();
@@ -63,10 +77,10 @@ export async function basicInit(page: Page) {
       expect(route.request().postDataJSON()).toMatchObject(registerReq);
       await route.fulfill({ json: registerRes });
     }
-    
+
     else if (method === 'DELETE') {
       expect(route.request().method()).toBe('DELETE');
-      
+
       const success = {
         message: 'logout successful'
       }
@@ -105,22 +119,26 @@ export async function basicInit(page: Page) {
   // Standard franchises and stores
   await page.route(/\/api\/franchise(\?.*)?$/, async (route) => {
     const franchiseRes = {
-      franchises: [
-        {
-          id: 2,
-          name: 'LotaPizza',
-          stores: [
-            { id: 4, name: 'Lehi' },
-            { id: 5, name: 'Springville' },
-            { id: 6, name: 'American Fork' },
-          ],
-        },
-        { id: 3, name: 'PizzaCorp', stores: [{ id: 7, name: 'Spanish Fork' }] },
-        { id: 4, name: 'topSpot', stores: [] },
-      ],
+      franchises
     };
     expect(route.request().method()).toBe('GET');
     await route.fulfill({ json: franchiseRes });
+  });
+
+  // Create a franchise
+  await page.route('*/**/api/franchise', async (route) => {
+    const newFranchise = {
+      id: 5,
+      name: 'Pie it Up',
+      stores: [],
+    };
+
+    franchises.push(newFranchise);
+
+    console.log(franchises);
+
+    expect(route.request().method()).toBe('POST');
+    await route.fulfill({ json: newFranchise });
   });
 
   // Order a pizza.

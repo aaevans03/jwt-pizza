@@ -63,6 +63,15 @@ export async function basicInit(page: Page) {
       expect(route.request().postDataJSON()).toMatchObject(registerReq);
       await route.fulfill({ json: registerRes });
     }
+    
+    else if (method === 'DELETE') {
+      expect(route.request().method()).toBe('DELETE');
+      
+      const success = {
+        message: 'logout successful'
+      }
+      await route.fulfill({ json: success })
+    }
   });
 
   // Return the currently logged in user

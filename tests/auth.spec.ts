@@ -32,3 +32,21 @@ test('Login', async ({ page }) => {
   await page.getByRole('link', { name: 'PL', exact: true }).click();
   await expect(page.getByText('pizzalover@jwt.com')).toBeVisible();
 });
+
+test('Logout', async ({ page }) => {
+
+  await basicInit(page);
+
+  await page.goto('http://localhost:5173/');
+
+  await page.getByRole('link', { name: 'Login' }).click();
+  await page.getByRole('textbox', { name: 'Email address' }).fill('pizzalover@jwt.com');
+  await page.getByRole('textbox', { name: 'Password' }).click();
+  await page.getByRole('textbox', { name: 'Password' }).fill('password');
+  await page.getByRole('button', { name: 'Login' }).click();
+  await expect(page.getByRole('link', { name: 'PL', exact: true })).toBeVisible();
+
+  await page.getByRole('link', { name: 'Logout' }).click();
+  await expect(page.getByRole('link', { name: 'Login' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Register' })).toBeVisible();
+});

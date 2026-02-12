@@ -114,22 +114,53 @@ export async function basicInit(page: Page) {
 
   // Order a pizza.
   await page.route('*/**/api/order', async (route) => {
-    switch (route.request().method()) {
-      case ('POST'): {
-        const orderReq = route.request().postDataJSON();
-        const orderRes = {
-          order: { ...orderReq, id: 23 },
-          jwt: 'eyJpYXQ',
-        };
-        expect(route.request().method()).toBe('POST');
-        await route.fulfill({ json: orderRes });
-      }
-      case ('GET'): {
-        expect(route.request().method()).toBe('GET');
-        await route.fulfill({ json: { dinerId: 4, orders: [], page: 1 } });
+    const method = route.request().method();
+    if (method === 'POST') {
+      const orderReq = route.request().postDataJSON();
+      const orderRes = {
+        order: { ...orderReq, id: 23 },
+        jwt: 'eyJpYXQ',
+      };
+      expect(route.request().method()).toBe('POST');
+      await route.fulfill({ json: orderRes });
+    } else if (method === 'GET') {
+      expect(route.request().method()).toBe('GET');
+      await route.fulfill({ json: { dinerId: 4, orders: [], page: 1 } });
+    }
+
+  // Send back "response" from pizza factory for valid JWT token
+  await page.route('https://pizza-factory.cs329.click/api/order/verify', async (route) => {
+
+    const response = {
+      message: "valid",
+      payload: {
+        "vendor": {
+            "id": "pizzavendor",
+            "name": "Pizza Vendor"
+        },
+        "diner": {
+            "id": 3,
+            "name": "Pizza Lover",
+            "email": "pizzalover@jwt.com"
+        },
+        "order": {
+            "items": [
+                {
+                    "menuId": 1,
+                    "description": "Veggie",
+                    "price": 0.0038
+                }
+            ],
+            "storeId": "4",
+            "franchiseId": 2,
+            "id": 9999
+        }
       }
     }
 
+    await route.fulfill({ json: response })
+  });
+    
   });
 
   await page.goto('/');

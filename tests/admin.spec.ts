@@ -48,3 +48,31 @@ test('Admin Dashboard', async ({ page }) => {
     // Expect that new franchise to display
     await expect(page.getByRole('cell', { name: 'Pie it Up' })).toBeVisible();
 });
+
+test('Admin Dashboard User List', async ({ page }) => {
+    await page.goto('http://localhost:5173/');
+    // await basicInit(page);
+
+    // Login as admin
+    await page.getByRole('link', { name: 'Login' }).click();
+    await page.getByRole('textbox', { name: 'Email address' }).fill('a@jwt.com');
+    await page.getByRole('textbox', { name: 'Password' }).click();
+    await page.getByRole('textbox', { name: 'Password' }).fill('admin');
+    await page.getByRole('button', { name: 'Login' }).click();
+    await expect(page.getByRole('link', { name: '常', exact: true })).toBeVisible();
+
+    // Admin Dashboard, see all franchises
+    await page.getByRole('link', { name: 'Admin' }).click();
+    await expect(page.getByText('Mama Ricci\'s kitchen')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Franchises' })).toBeVisible();
+
+    // User table
+    await expect(page.getByRole('heading', { name: 'Users' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'ID' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Name' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Email' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Roles' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Action' }).nth(1)).toBeVisible();
+    await expect(page.getByRole('main')).toContainText('1');
+
+});

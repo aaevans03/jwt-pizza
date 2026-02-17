@@ -73,6 +73,15 @@ test('Admin Dashboard User List', async ({ page }) => {
     await expect(page.getByRole('columnheader', { name: 'Email' })).toBeVisible();
     await expect(page.getByRole('columnheader', { name: 'Roles' })).toBeVisible();
     await expect(page.getByRole('columnheader', { name: 'Action' }).nth(1)).toBeVisible();
-    await expect(page.getByRole('main')).toContainText('1');
 
+    for (let i = 1; i <= 10; i++) {
+        await expect(page.getByRole('cell', { name: i.toString(), exact: true })).toBeVisible();
+    }
+
+    await expect(page.getByRole('main')).toContainText('diner');
+
+    await page.getByRole('button', { name: '»' }).nth(1).click();
+    await expect(page.getByRole('cell', { name: '11', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: '«' }).nth(1).click();
+    await expect(page.getByRole('cell', { name: '1', exact: true })).toBeVisible();
 });

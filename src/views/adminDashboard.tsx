@@ -57,6 +57,10 @@ export default function AdminDashboard(props: Props) {
     setFranchiseList(await pizzaService.getFranchises(franchisePage, 10, `*${filterFranchiseRef.current?.value}*`));
   }
 
+  async function filterUsers() {
+    setUserList(await pizzaService.getUserList(userPage, 10, `*${filterUserRef.current?.value}*`));
+  }
+
   let response = <NotFound />;
   if (Role.isRole(props.user, Role.Admin)) {
     response = (
@@ -148,7 +152,7 @@ export default function AdminDashboard(props: Props) {
               <div className="-m-1.5 overflow-x-auto">
                 <div className="p-1.5 min-w-full inline-block align-middle">
                   <div className="overflow-hidden">
-                    <table className="min-w-full divide-y divide-gray-200">
+                    <table className="min-w-full divide-y divide-gray-200" id="users">
                       <thead className="uppercase text-neutral-100 bg-slate-400 border-b-2 border-gray-500">
                         <tr>
                           {['ID', 'Name', 'Email', 'Roles', 'Action'].map((header) => (
@@ -186,8 +190,8 @@ export default function AdminDashboard(props: Props) {
                       <tfoot>
                         <tr>
                           <td className="px-1 py-1" colSpan={3}>
-                            <input type="text" ref={filterFranchiseRef} name="filterFranchise" placeholder="Filter franchises" className="px-2 py-1 text-sm border border-gray-300 rounded-lg" />
-                            <button type="submit" className="ml-2 px-2 py-1 text-sm font-semibold rounded-lg border border-orange-400 text-orange-400 hover:border-orange-800 hover:text-orange-800" onClick={filterFranchises}>
+                            <input type="text" ref={filterUserRef} name="filterFranchise" placeholder="Filter users by name" className="px-2 py-1 text-sm border border-gray-300 rounded-lg" />
+                            <button type="submit" className="ml-2 px-2 py-1 text-sm font-semibold rounded-lg border border-orange-400 text-orange-400 hover:border-orange-800 hover:text-orange-800" onClick={filterUsers}>
                               Submit
                             </button>
                           </td>

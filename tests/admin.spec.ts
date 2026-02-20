@@ -138,9 +138,57 @@ test('Admin Dashboard User List, Delete User', async ({ page }) => {
     // Expect the dialog and the user info to not be visible
     await page.waitForSelector('[role="dialog"].hidden', { state: 'attached' });
     await expect(page.getByRole('heading', { name: 'Confirmation' })).not.toBeVisible();
-    
+
     await expect(page.locator('td#userId').nth(1)).not.toHaveText(userId.toString());
     await expect(page.locator('td#userEmail').nth(1)).not.toHaveText(userEmail.toString());
     await expect(page.getByRole('cell', { name: userId })).not.toBeVisible();
     await expect(page.getByRole('cell', { name: userEmail })).not.toBeVisible();
+});
+
+test('Admin Dashboard Filter Users', async ({ page }) => {
+    await page.goto('http://localhost:5173/');
+    // await basicInit(page);
+
+    // Login as admin
+    await page.getByRole('link', { name: 'Login' }).click();
+    await page.getByRole('textbox', { name: 'Email address' }).fill('a@jwt.com');
+    await page.getByRole('textbox', { name: 'Password' }).click();
+    await page.getByRole('textbox', { name: 'Password' }).fill('admin');
+    await page.getByRole('button', { name: 'Login' }).click();
+    await expect(page.getByRole('link', { name: '常', exact: true })).toBeVisible();
+
+    // Admin Dashboard, see all franchises
+    await page.getByRole('link', { name: 'Admin' }).click();
+    await expect(page.getByText('Mama Ricci\'s kitchen')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Franchises' })).toBeVisible();
+    
+    // User table
+    await expect(page.getByRole('heading', { name: 'Users' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'ID' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Name' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Email' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Roles' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Action' }).nth(1)).toBeVisible();
+    
+    await expect(page.getByRole('main')).toContainText('diner');
+
+    // Filter users
+    await page.getByRole('textbox', { name: 'Filter users' }).fill('Lover');
+    await page.getByRole('button', { name: 'Submit' }).nth(1).click();
+    await expect(page.getByRole('cell', { name: 'Pizza Lover' })).toBeVisible();
+
+    // Check if certain users are not visible
+    await expect(page.getByRole('cell', { name: '常用名字' })).not.toBeVisible();
+    await expect(page.getByRole('cell', { name: 'pizza diner' })).not.toBeVisible();
+    await expect(page.getByRole('cell', { name: 'Test User' })).not.toBeVisible();
+    
+    // Verify that table only has 1 row
+    const tbodyRows = page.locator('#users tbody tr');
+    await expect(tbodyRows).toHaveCount(1);
+    
+    // Reset filter
+    await page.getByRole('textbox', { name: 'Filter users by name' }).fill('');
+    await page.locator('#users').getByRole('button', { name: 'Submit' }).click();
+    await expect(page.getByRole('cell', { name: '常用名字' })).toBeVisible();
+    expect(await tbodyRows.count() > 1).toBe(true);
 });

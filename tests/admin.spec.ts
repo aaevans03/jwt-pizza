@@ -146,8 +146,8 @@ test('Admin Dashboard User List, Delete User', async ({ page }) => {
 });
 
 test('Admin Dashboard Filter Users', async ({ page }) => {
+    await basicInit(page);
     await page.goto('http://localhost:5173/');
-    // await basicInit(page);
 
     // Login as admin
     await page.getByRole('link', { name: 'Login' }).click();

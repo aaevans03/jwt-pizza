@@ -118,9 +118,26 @@ export async function basicInit(page: Page) {
     }
   });
 
-  // List of users, page 1
+  // List users, page 1; or, return a hard-coded user for filter
   await page.route('*/**/api/user?page=0&limit=10&name=*', async (route) => {
     expect(route.request().method()).toBe('GET');
+
+    const url = new URL(route.request().url());
+    const nameParam = url.searchParams.get('name') || '';
+
+    if (nameParam.includes('Lover')) {
+      const users = [{
+        id: '29',
+        name: 'Pizza Lover',
+        email: 'pizzalover@jwt.com',
+        roles: [{ role: Role.Diner }]
+      }];
+
+      const more = false;
+      await route.fulfill({ json: { users, more } });
+      return;
+    }
+
     const initalUserList = Object.values(userList).map(u => ({ id: u.id, name: u.name, email: u.email, roles: u.roles }));
     const users = initalUserList.slice(0, 10);
     const more = true;

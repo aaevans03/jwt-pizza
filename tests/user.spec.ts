@@ -1,6 +1,9 @@
 import { test, expect } from 'playwright-test-coverage';
+import { basicInit } from './mocks';
 
 test('updateUser', async ({ page }) => {
+    await basicInit(page);
+    await page.goto('http://localhost:5173/');
     // Register new user
     const email = `user${Math.floor(Math.random() * 10000)}@jwt.com`;
     await page.goto('/');

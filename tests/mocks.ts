@@ -4,7 +4,7 @@ import { Role, User } from '../src/service/pizzaService';
 
 export async function basicInit(page: Page) {
   let loggedInUser: User | undefined;
-  const validUsers: Record<string, User> = {
+  let validUsers: Record<string, User> = {
     'pizzalover@jwt.com': {
       id: '3',
       name: 'Pizza Lover',
@@ -63,16 +63,17 @@ export async function basicInit(page: Page) {
     }
 
     else if (method === 'POST') {
-      const registerReq = { name: 'Billy', email: 'billy@gmail.com', password: 'pass' };
+      const registerReq: { name: string, email: string, password: string } = route.request().postDataJSON();
       const registerRes = {
-        user: {
-          id: 1,
-          name: 'Billy',
-          email: 'billy@gmail.com',
-          roles: [{ role: 'diner' }],
-        },
-        token: 'abcdef',
-      };
+          user: {
+            id: 1,
+            name: registerReq.name,
+            email: registerReq.email,
+            roles: [{ role: 'diner' }],
+          },
+          token: 'abcdef',
+        }
+
       expect(route.request().method()).toBe('POST');
       expect(route.request().postDataJSON()).toMatchObject(registerReq);
       await route.fulfill({ json: registerRes });
@@ -92,6 +93,21 @@ export async function basicInit(page: Page) {
   await page.route('*/**/api/user/me', async (route) => {
     expect(route.request().method()).toBe('GET');
     await route.fulfill({ json: loggedInUser });
+  });
+
+  await page.route('*/**/api/user/1', async (route) => {
+    expect(route.request().method()).toBe('PUT');
+    const updateReq = route.request().postDataJSON();
+    loggedInUser = { ...loggedInUser, ...updateReq };
+    
+    await route.fulfill({ json: loggedInUser });
+
+    if (loggedInUser) {
+      if (loggedInUser?.email) {
+        validUsers[loggedInUser.email] = loggedInUser as User;
+      }
+      loggedInUser.password = 'diner'
+    }
   });
 
   // A standard menu

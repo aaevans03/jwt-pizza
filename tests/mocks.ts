@@ -102,6 +102,7 @@ export async function basicInit(page: Page) {
     await route.fulfill({ json: loggedInUser });
   });
 
+  // Change user info
   await page.route('*/**/api/user/1', async (route) => {
     expect(route.request().method()).toBe('PUT');
     const updateReq = route.request().postDataJSON();
@@ -117,6 +118,7 @@ export async function basicInit(page: Page) {
     }
   });
 
+  // List of users, page 1
   await page.route('*/**/api/user?page=0&limit=10&name=*', async (route) => {
     expect(route.request().method()).toBe('GET');
     const initalUserList = Object.values(userList).map(u => ({ id: u.id, name: u.name, email: u.email, roles: u.roles }));
@@ -125,12 +127,20 @@ export async function basicInit(page: Page) {
     await route.fulfill({ json: { users, more } });
   });
   
+  // List of users, page 2
   await page.route('*/**/api/user?page=1&limit=10&name=*', async (route) => {
     expect(route.request().method()).toBe('GET');
     const initalUserList = Object.values(userList).map(u => ({ id: u.id, name: u.name, email: u.email, roles: u.roles }));
     const users = initalUserList.slice(10, 20);
     const more = true;
     await route.fulfill({ json: { users, more } });
+  });
+  
+  // Delete a user
+  await page.route('*/**/api/user/2', async (route) => {
+    expect(route.request().method()).toBe('DELETE');
+    delete userList['pizzadiner@jwt.com'];
+    await route.fulfill({ status: 200, json: { message: 'User deleted successfully' } });
   });
 
   // A standard menu
@@ -235,7 +245,7 @@ export async function basicInit(page: Page) {
   await page.goto('/');
 }
 
-const userList: Record<string, User> = {
+let userList: Record<string, User> = {
   // 25 additional users
   'a@jwt.com': {
     id: '1',

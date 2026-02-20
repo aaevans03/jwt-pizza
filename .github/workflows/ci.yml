@@ -32,7 +32,6 @@ jobs:
       - name: Build
         run: |  # npm ci is a clean install of npm, for testing environments/CI. The last line is so any 404 will be redirected to the home page
           npm ci && npm run build
-          cp dist/index.html dist/404.html
 
       - name: Run tests
         run: |
@@ -45,24 +44,38 @@ jobs:
           color=$(echo "$coverage < 80" | bc | awk '{if ($1) print "red"; else print "green"}')
           curl -s -X POST "https://pizza-factory.cs329.click/api/badge/${{ secrets.NET_ID }}/jwtpizzacoverage?label=Coverage&value=$coverage%25&color=$color" -H "authorization: bearer ${{ secrets.FACTORY_API_KEY }}"
           
-      - name: Update GitHub Pages artifact # Packages up the dist directory for the next job to deploy to GitHub Pages
-        uses: actions/upload-pages-artifact@v3 # This is a plugin, specifically defined to work with GitHub Pages
+      - name: Update dist artifact    # no longer GitHub pages artifact
+        uses: actions/upload-artifact@v4
         with:
+          name: package
           path: dist/
 
   deploy:
-    needs: build  # Build before you deploy
-    permissions:  # Permissions to modify GitHub Pages for this repo
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+    needs: build              # Build step complete
+    permissions:
+      id-token: write         # Create tokens
+    runs-on: ubuntu-latest    # Download latest Ubuntu latest container
+    env:
+      version: ${{needs.build.outputs.version}}
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4   # Looks for artifact created with the build job
+      - name: Create OIDC token to AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          audience: sts.amazonaws.com
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT }}:role/${{ secrets.CI_IAM_ROLE }}
+
+      - name: Download dist artifact          # Download distribution package
+        uses: actions/download-artifact@v4
+        with:
+          name: package
+          path: dist/
+
+      - name: Push to AWS S3                  # Copy to S3, invalidate CloudFront to update the website
+        run: |
+          echo Deploying $version
+          aws s3 cp dist s3://${{ secrets.APP_BUCKET }} --recursive
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.DISTRIBUTION_ID }} --paths "/*"
 
   success:
     needs: [build, deploy]

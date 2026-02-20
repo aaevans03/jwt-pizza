@@ -136,7 +136,9 @@ test('Admin Dashboard User List, Delete User', async ({ page }) => {
     await page.getByRole('button', { name: 'Delete' }).click();
     
     // Expect the dialog and the user info to not be visible
+    await page.waitForSelector('[role="dialog"].hidden', { state: 'attached' });
     await expect(page.getByRole('heading', { name: 'Confirmation' })).not.toBeVisible();
+    
     await expect(page.locator('td#userId').nth(1)).not.toHaveText(userId.toString());
     await expect(page.locator('td#userEmail').nth(1)).not.toHaveText(userEmail.toString());
     await expect(page.getByRole('cell', { name: userId })).not.toBeVisible();

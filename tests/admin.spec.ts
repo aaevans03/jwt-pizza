@@ -50,9 +50,9 @@ test('Admin Dashboard', async ({ page }) => {
 });
 
 test('Admin Dashboard User List', async ({ page }) => {
+    await basicInit(page);
     await page.goto('http://localhost:5173/');
-    // await basicInit(page);
-
+    
     // Login as admin
     await page.getByRole('link', { name: 'Login' }).click();
     await page.getByRole('textbox', { name: 'Email address' }).fill('a@jwt.com');

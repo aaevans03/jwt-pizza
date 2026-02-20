@@ -73,15 +73,72 @@ test('Admin Dashboard User List', async ({ page }) => {
     await expect(page.getByRole('columnheader', { name: 'Email' })).toBeVisible();
     await expect(page.getByRole('columnheader', { name: 'Roles' })).toBeVisible();
     await expect(page.getByRole('columnheader', { name: 'Action' }).nth(1)).toBeVisible();
+    
+    await expect(page.getByRole('main')).toContainText('diner');
+    
+    // Get the first user ID
+    const firstUserId = Number(await page.locator('td#userId').nth(0).textContent());
+    expect(Number.isInteger(firstUserId)).toBe(true);
+    
+    // Go up a page, get the second user ID, make sure it's greater than the first one
+    await page.getByRole('button', { name: '»' }).nth(1).click();
+    await expect(page.locator('td#userId').nth(0)).not.toHaveText(firstUserId.toString());
+    const secondUserId = Number(await page.locator('td#userId').nth(0).textContent());
+    expect(Number.isInteger(secondUserId)).toBe(true);
+    expect(firstUserId < secondUserId).toBe(true);
+    
+    // Go back to first page, make sure you get the same first ID as before
+    await page.getByRole('button', { name: '«' }).nth(1).click();
+    await expect(page.locator('td#userId').nth(0)).not.toHaveText(secondUserId.toString());
+    const firstUserIdAgain = Number(await page.locator('td#userId').nth(0).textContent());
+    expect(firstUserIdAgain).toBe(firstUserId);
+});
 
-    for (let i = 1; i <= 10; i++) {
-        await expect(page.getByRole('cell', { name: i.toString(), exact: true })).toBeVisible();
-    }
+test('Admin Dashboard User List, Delete User', async ({ page }) => {
+        await page.goto('http://localhost:5173/');
+    // await basicInit(page);
 
+    // Login as admin
+    await page.getByRole('link', { name: 'Login' }).click();
+    await page.getByRole('textbox', { name: 'Email address' }).fill('a@jwt.com');
+    await page.getByRole('textbox', { name: 'Password' }).click();
+    await page.getByRole('textbox', { name: 'Password' }).fill('admin');
+    await page.getByRole('button', { name: 'Login' }).click();
+    await expect(page.getByRole('link', { name: '常', exact: true })).toBeVisible();
+
+    // Admin Dashboard, see all franchises
+    await page.getByRole('link', { name: 'Admin' }).click();
+    await expect(page.getByText('Mama Ricci\'s kitchen')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Franchises' })).toBeVisible();
+    
+    // User table
+    await expect(page.getByRole('heading', { name: 'Users' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'ID' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Name' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Email' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Roles' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Action' }).nth(1)).toBeVisible();
+    
     await expect(page.getByRole('main')).toContainText('diner');
 
-    await page.getByRole('button', { name: '»' }).nth(1).click();
-    await expect(page.getByRole('cell', { name: '11', exact: true })).toBeVisible();
-    await page.getByRole('button', { name: '«' }).nth(1).click();
-    await expect(page.getByRole('cell', { name: '1', exact: true })).toBeVisible();
+    // Grab ID of user to delete
+    const userIdLocator = page.locator('td#userId').nth(1);
+    const userId = await userIdLocator.textContent() ?? '';
+    const userEmail = await page.locator('td#userEmail').nth(1).textContent() ?? '';
+    
+    expect(userId).not.toBe('');
+    expect(userEmail).not.toBe('');
+
+    // Delete that user
+    await page.getByRole('button', { name: 'Remove' }).nth(1).click();
+    await expect(page.getByRole('heading', { name: 'Confirmation' })).toBeVisible();
+    await expect(page.locator('span').filter({ hasText: 'pizza diner' })).toBeVisible();
+    await page.getByRole('button', { name: 'Delete' }).click();
+    
+    // Expect the dialog and the user info to not be visible
+    await expect(page.getByRole('heading', { name: 'Confirmation' })).not.toBeVisible();
+    await expect(page.locator('td#userId').nth(1)).not.toHaveText(userId.toString());
+    await expect(page.locator('td#userEmail').nth(1)).not.toHaveText(userEmail.toString());
+    await expect(page.getByRole('cell', { name: userId })).not.toBeVisible();
+    await expect(page.getByRole('cell', { name: userEmail })).not.toBeVisible();
 });

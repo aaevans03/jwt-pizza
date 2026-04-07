@@ -54,9 +54,12 @@ Here are the specific steps I followed to create a canary release:
 5. Navigate to **Load Balancers**, open `jwt-pizza-service`. Open up the **`HTTPS:443`** rule at the bottom. A rule should have just been created; delete it so there's only the one rule remaining before that forwards to the `jwt-pizza-service` target group.
 6. Press the edit icon on the remaining listener rule. Under **Forward to target group**, this is where you can add another target group and adjust the weights.
 	- You can adjust it. For a regular release, 10% weight on canary should be good. You can increase it as you gain confidence it is working.
-![](curiosityReportForwardToTargetGroups.png)
+
+	![](curiosityReportForwardToTargetGroups.png)
+
 7. Click **Save changes**. Now, as users make calls to your backend, on average 10% of the requests will be routed to the new system.
-![](curiosityReportCanaryResults.png)
+
+	![](curiosityReportCanaryResults.png)
 
 ## Importance to QA/DevOps
 

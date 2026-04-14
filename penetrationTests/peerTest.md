@@ -23,7 +23,7 @@ Zack Sorensen and Alex Evans
 | Classification | Authentication Failure                               |
 | Severity       | 2                                                    |
 | Description    | Log into a user with no password                     |
-| Images         | ![Attack 2](zack2_1.png)<br>![Attack 2](zack2_2.png) |
+| Images         | ![Attack 2](./peerAttackImages/zack2_1.png)<br>![Attack 2](./peerAttackImages/zack2_2.png) |
 | Corrections    | Add check to make sure password is not empty/null    |
 
 | Item           | Result                                                 |
@@ -33,7 +33,7 @@ Zack Sorensen and Alex Evans
 | Classification | Insecure Design                                        |
 | Severity       | 3                                                      |
 | Description    | Send modified price to cause loss of revenue           |
-| Images         | ![Attack 3](zack3.png)                                 |
+| Images         | ![Attack 3](./peerAttackImages/zack3.png)              |
 | Corrections    | Use prices from the database and not from request body |
 
 
@@ -54,7 +54,7 @@ Zack Sorensen and Alex Evans
 | Classification | Injection                                                                        |
 | Severity       | 2                                                                                |
 | Description    | Corrupt user data via malicious username update (set all emails to a junk email) |
-| Images         | ![Attack 5](zack5.png)                                                           |
+| Images         | ![Attack 5](./peerAttackImages/zack5.png)                                                           |
 | Correctis      | Sanitize SQL inputs                                                              |
 
   
@@ -69,7 +69,7 @@ Zack Sorensen and Alex Evans
 | Classification | Injection                                                                      |
 | Severity       | 0                                                                              |
 | Description    | SQL injection through updating a user, to try and delete the database. Failed. |
-| Images         | ![Attack 1, Injected SQL Code](alex1.png)                                      |
+| Images         | ![Attack 1, Injected SQL Code](./selfAttackImages/alex1.png)                                      |
 | Corrections    | Still, it would be good to go and sanitize my user inputs.                     |
 
 | Item           | Result                                                                                                                                             |
@@ -163,7 +163,7 @@ Zack Sorensen and Alex Evans
 | Classification | SQL Injection Attack                                |
 | Severity       | 2                                                   |
 | Description    | Replace all user emails with a junk email           |
-| Images         | ![Attack 5](me5_1.png)<br>![Attack 5](me5_2.png)    |
+| Images         | ![Attack 5](./peerAttackImages/me5_1.png)<br>![Attack 5](./peerAttackImages/me5_2.png)    |
 | Corrections    | Sanitize SQL inputs, restore database with a backup |
 
 ### Alex attacking Zack
@@ -175,7 +175,7 @@ Zack Sorensen and Alex Evans
 | Classification | Identification and Authentication Failures                                                                                |
 | Severity       | 0                                                                                                                         |
 | Description    | Brute force passwords to log into admin account. Failed, because I got hit by the rate limit for authentication attempts. |
-| Images         | ![Attack 1](peer1_1.png)<br>![Attack 1](peer1_2.png)                                                                      |
+| Images         | ![Attack 1](./peerAttackImages/peer1_1.png)<br>![Attack 1](./peerAttackImages/peer1_2.png)                                                                      |
 | Corrections    | Not needed                                                                                                                |
 
 | Item           | Result                                                                                             |
@@ -185,7 +185,7 @@ Zack Sorensen and Alex Evans
 | Classification | Broken Access Control                                                                              |
 | Severity       | 0                                                                                                  |
 | Description    | Delete an account as a non-admin user. Would have succeeded, but the endpoint was not implemented. |
-| Images         | ![Attack 2](peer2.png)                                                                             |
+| Images         | ![Attack 2](./peerAttackImages/peer2.png)                                                                             |
 | Corrections    | Implement the delete user endpoint.                                                                |
 
 | Item           | Result                                                                               |
@@ -195,7 +195,7 @@ Zack Sorensen and Alex Evans
 | Classification | Insecure Design                                                                      |
 | Severity       | 0                                                                                    |
 | Description    | Order a custom pizza by changing the description, but not the price. Failed attempt. |
-| Images         | ![Attack 3](peer3.png)                                                               |
+| Images         | ![Attack 3](./peerAttackImages/peer3.png)                                                               |
 | Corrections    | Not needed                                                                           |
 
 | Item           | Result                                                                                                            |
@@ -205,7 +205,7 @@ Zack Sorensen and Alex Evans
 | Classification | Broken Access Control                                                                                             |
 | Severity       | 2                                                                                                                 |
 | Description    | As a non-admin user, get a list of all users. Would have succeeded with more time, but got this nice error stack. |
-| Images         | ![Attack 4](peer4.png)                                                                                            |
+| Images         | ![Attack 4](./peerAttackImages/peer4.png)                                                                                            |
 | Corrections    | Remove the error stack, secure user list endpoint.                                                                |
 
 | Item           | Result                                                                                                                                                                                                                            |
@@ -215,7 +215,7 @@ Zack Sorensen and Alex Evans
 | Classification | Software Logging and Monitoring Failures, Insecure Design                                                                                                                                                                         |
 | Severity       | 2                                                                                                                                                                                                                                 |
 | Description    | Repeatedly send an order that is too big. The result was a really large latency on the dashboard that was not accurate (lots of requests starting but not finishing).<br><br>This would be a good way to hide a different attack! |
-| Images         | ![Attack 5](peer5.png)                                                                                                                                                                                                            |
+| Images         | ![Attack 5](./peerAttackImages/peer5.png)                                                                                                                                                                                                            |
 | Corrections    | Rate limiting for ordering pizza.                                                                                                                                                                                                 |
 
 ## What we learned
